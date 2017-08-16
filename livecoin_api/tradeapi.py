@@ -4,7 +4,7 @@ import json
 
 ex_url = 'https://api.livecoin.net/'
 
-proxy = 'maker.garant.ru:3128'
+proxy = 'proxy.ru:1111'
 
 proxyDict = {
     "http": proxy,
