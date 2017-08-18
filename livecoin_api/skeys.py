@@ -1,2 +1,2 @@
 client_key = 'INSERTYOURKEY'
-client_secret = b'INSERTYOURSECRETKEY'
+client_secret = 'INSERTYOURSECRETKEY'
