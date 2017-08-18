@@ -31,3 +31,30 @@ class abstract_api():
 
     def get_maxbid(self, pair):
         pass
+
+    def get_balanses(self):
+        pass
+
+    def get_openorders(self):
+        pass
+
+    def get_partiallyorders(self):
+        pass
+
+    def cancel_orders(self, order_ids):
+        pass
+
+    def buy_currency(self, pair, quantity, price):
+        pass
+
+    def sell_currency(self, pair, quantity, price):
+        pass
+
+    def get_buy_price(self, pair):
+        pass
+
+    def get_min_order_size(self, mult):
+        return 0.0001*mult
+
+    def post_request(self, method, data):
+        pass
