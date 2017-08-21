@@ -15,7 +15,7 @@ server = 'api.livecoin.net'
 proxy = 'proxy.ru:3128'
 proxyhost = 'proxy.ru'
 proxyport = 3128
-proxy_used = True
+proxy_used = False
 
 proxyDict = {
     "http": proxy,
@@ -23,9 +23,11 @@ proxyDict = {
     "ftp": proxy
 }
 
-
 def tr_query(url):
-    req = requests.get(url, proxies=proxyDict)
+    if proxy_used:
+        req = requests.get(url, proxies=proxyDict)
+    else:
+        req = requests.get(url)
     return json.loads(req.text)
 
 
