@@ -35,7 +35,7 @@ ex_list.append('MCO/BTC')
 ex_list.append('BCH/BTC')
 
 order_size = trade_bot.get_min_order_size(settings.min_order_mult)
-max_num_orders = int(btc_balance / order_size)
+max_num_orders = int(btc_balance * 0.99 / order_size)
 
 pair_ls = trade_bot.get_coin_list()
 
@@ -67,7 +67,7 @@ rg_list.sort(key=lambda i: i['rang'], reverse=True)
 
 if max_num_orders > len(rg_list):
     max_num_orders = len(rg_list)
-    order_size = btc_balance / max_num_orders
+    order_size = (btc_balance  * 0.99)/ max_num_orders
 
 i = 0
 for k in rg_list:
