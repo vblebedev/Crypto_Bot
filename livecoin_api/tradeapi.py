@@ -12,32 +12,27 @@ import http.client
 ex_url = 'https://api.livecoin.net/'
 server = 'api.livecoin.net'
 
-proxy = 'proxy.ru:3128'
-proxyhost = 'proxy.ru'
-proxyport = 3128
-proxy_used = False
-
-proxyDict = {
-    "http": proxy,
-    "https": proxy,
-    "ftp": proxy
-}
-
-def tr_query(url):
-    if proxy_used:
-        req = requests.get(url, proxies=proxyDict)
-    else:
-        req = requests.get(url)
-    return json.loads(req.text)
-
-
 class trade_api(abstract_api):
+    def __init__(self, proxy_sett):
+        self.proxy = proxy_sett['proxy_url']
+        self.proxyhost = proxy_sett['proxyhost']
+        self.proxyport = proxy_sett['proxyport']
+        self.proxy_used = proxy_sett['proxy_used']
+        self.proxyDict = proxy_sett['proxyDict']
+
+    def tr_query(self, url):
+        if self.proxy_used:
+            req = requests.get(url, proxies=self.proxyDict)
+        else:
+            req = requests.get(url)
+        return json.loads(req.text)
+
     def get_request(self, method, data):
         encoded_data = urlencode(data)
         sign = hmac.new(client_secret.encode(), msg=encoded_data.encode(), digestmod=hashlib.sha256).hexdigest().upper()
         headers = {"Api-key": client_key, "Sign": sign}
-        if proxy_used:
-            conn = http.client.HTTPSConnection(proxyhost, proxyport)
+        if self.proxy_used:
+            conn = http.client.HTTPSConnection(self.proxyhost, self.proxyport)
             conn.set_tunnel(server)
         else:
             conn = http.client.HTTPSConnection(server)
@@ -51,8 +46,8 @@ class trade_api(abstract_api):
         sign = hmac.new(client_secret.encode(), msg=encoded_data.encode(),
                         digestmod=hashlib.sha256).hexdigest().upper()
         headers = {"Api-key": client_key, "Sign": sign, "Content-type": "application/x-www-form-urlencoded"}
-        if proxy_used:
-            conn = http.client.HTTPSConnection(proxyhost, proxyport)
+        if self.proxy_used:
+            conn = http.client.HTTPSConnection(self.proxyhost, self.proxyport)
             conn.set_tunnel(server)
         else:
             conn = http.client.HTTPSConnection(server)
@@ -61,14 +56,19 @@ class trade_api(abstract_api):
         conn.close()
         return response
 
-    def clear_orders(self):
-        pass
-
     def get_coin_list(self):
-        return tr_query(ex_url + '/exchange/ticker')
+        return self.tr_query(ex_url + '/exchange/ticker')
+
+    def get_down_list(self):
+        d = []
+        lst = self.tr_query(ex_url + '/info/coinInfo')
+        for co in lst['info']:
+            if co['walletStatus'] != 'normal':
+                d.append(co['symbol'])
+        return d
 
     def get_coin_details(self, pair):
-        return tr_query(ex_url + '/exchange/maxbid_minask/?currencyPair=' + pair)
+        return self.tr_query(ex_url + '/exchange/maxbid_minask/?currencyPair=' + pair)
 
     def get_volume(self, co):
         return float(co['volume']) * float(co['last'])
@@ -81,6 +81,15 @@ class trade_api(abstract_api):
 
     def get_low(self, pair):
         return pair['low']
+
+    def get_high(self, pair):
+        return pair['high']
+
+    def get_best_bid(self, pair):
+        return pair['best_bid']
+
+    def get_best_ask(self, pair):
+        return pair['best_ask']
 
     def is_Error(self, req):
         return 'errorCode' in req
@@ -130,6 +139,8 @@ class trade_api(abstract_api):
         if d['totalRows'] > 0:
             d = d['data']
             for od in d:
+                if od['orderStatus'] == 'PARTIALLY_FILLED':
+                    order_pairs.append(od['currencyPair'])
                 if od['orderStatus'] == 'PARTIALLY':
                     order_pairs.append(od['currencyPair'])
         return order_pairs
@@ -162,9 +173,9 @@ class trade_api(abstract_api):
             response = self.post_request(method, data)
             value = json.loads(response)
             if value['cancelled'] == True:
-                print('Cancel order #', od['id'], od['pair'])
+                print('успешно отменен ордер #', od['id'], 'объёмом', value['quantity'], od['pair'])
             else:
-                print('Error! Order #', od['id'], od['pair'])
+                print('ошибка отмены ордера #', od['id'], od['pair'])
 
     def buy_currency(self, pair, quantity, price):
         method = "/exchange/buylimit"
@@ -172,7 +183,7 @@ class trade_api(abstract_api):
         response = self.post_request(method, data)
         value = json.loads(response)
         if value['success'] == True:
-            print('Buy: ', str(quantity), pair, 'price', str(price), ' #:',
+            print('успешно создан ордер на покупку', str(quantity), pair, 'по курсу', str(price), ' #:',
                   value['orderId'])
         else:
             print(value)
@@ -183,7 +194,7 @@ class trade_api(abstract_api):
         response = self.post_request(method, data)
         value = json.loads(response)
         if value['success'] == True:
-            print('Sell: ', str(quantity), pair, 'price', str(price), ' #:',
+            print('успешно создан ордер на продажу', str(quantity), pair, 'по курсу', str(price), ' #:',
                   value['orderId'])
         else:
             print(value)
