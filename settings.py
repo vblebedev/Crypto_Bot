@@ -9,8 +9,8 @@ buy_step = 0.00000001
 sell_step = 0.00000001
 max_dev = 0.25
 
-proxy = 'maker.garant.ru:3128'
-proxyhost = 'maker.garant.ru'
+proxy = 'yourproxy.ru:3128'
+proxyhost = 'yourproxy.ru'
 proxyport = 3128
 proxy_used = True
 
