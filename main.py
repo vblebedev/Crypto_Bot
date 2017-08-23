@@ -20,7 +20,7 @@ for b in balances:
         # sell this currency
         buys_pr = trade_bot.get_buy_price(b + '/BTC')
         if (buys_pr) == 0:
-            print('Не смог найти данные о покупке ' + b)
+            print('Not info about ' + b)
             continue
         dt = trade_bot.get_coin_details(b + '/BTC')
         if not trade_bot.is_Error(dt):
@@ -29,7 +29,7 @@ for b in balances:
             if buys_pr * (1 + settings.min_delta + 0.005) < min_ask:
                 trade_bot.sell_currency(b + '/BTC', "{0:.8f}".format(balances[b]), "{0:.8f}".format(min_ask))
             else:
-                print('Прогорели в ' + b)
+                print('Wait in ' + b)
 
 ex_list.append('MCO/BTC')
 ex_list.append('BCH/BTC')
