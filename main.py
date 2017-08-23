@@ -6,13 +6,13 @@ trade_bot = trade_api(settings.proxy_sett)
 order_ids = trade_bot.get_openorders()
 
 ex_list = trade_bot.get_partiallyorders()
-print(ex_list)
+
 down_list = trade_bot.get_down_list()
 
 for dl in down_list:
-    ex_list.append(dl + trade_bot.get_btc_ex())
+    ex_list.append(trade_bot.get_btc_ex(dl))
 
-ex_list.append('BCH' + trade_bot.get_btc_ex())
+ex_list.append(trade_bot.get_btc_ex('BCH'))
 
 trade_bot.cancel_orders(order_ids)
 
@@ -22,21 +22,21 @@ print(balances)
 btc_balance = trade_bot.get_btc_balance(balances)
 
 for b in balances:
-    if str(b).upper() != 'BTC' and ((b + trade_bot.get_btc_ex()) not in ex_list):
-        ex_list.append(b + trade_bot.get_btc_ex())
+    if str(b).upper() != 'BTC' and ((trade_bot.get_btc_ex(b)) not in ex_list):
+        ex_list.append(trade_bot.get_btc_ex(b))
         # sell this currency
-        buys_pr = trade_bot.get_buy_price(b + trade_bot.get_btc_ex())
+        buys_pr = trade_bot.get_buy_price(trade_bot.get_btc_ex(b))
         if (buys_pr) == 0:
-            print('Не смог найти данные о покупке ' + str(b).upper())
+            print('No info about ' + str(b).upper())
             continue
-        dt = trade_bot.get_coin_details(b + trade_bot.get_btc_ex())
+        dt = trade_bot.get_coin_details(trade_bot.get_btc_ex(b))
         if not trade_bot.is_Error(dt):
             dt = trade_bot.get_currency_info(dt)
             min_ask = trade_bot.get_minask(dt) - settings.sell_step
             if buys_pr * (1 + settings.min_delta) < min_ask:
-                trade_bot.sell_currency(b + trade_bot.get_btc_ex(), "{0:.8f}".format(balances[b]), "{0:.8f}".format(min_ask))
+                trade_bot.sell_currency(trade_bot.get_btc_ex(b), "{0:.8f}".format(balances[b]), "{0:.8f}".format(min_ask))
             else:
-                print('Прогорели в ' + b)
+                print('Wait in ' + b)
 
 order_size = trade_bot.get_min_order_size(settings.min_order_mult)
 max_num_orders = int((btc_balance * 0.99) / order_size)
