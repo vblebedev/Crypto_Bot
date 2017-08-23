@@ -50,22 +50,21 @@ def yo_query(method, values):
 
 # PUBLIC API
 # ---------------------------------------------------------------------------------------------------------------------
-# Информация обо всех парах
+
 def getinfo():
     return yo_query('info', {})
 
 
-# Информация по паре
+
 def getticker(currency):
     return yo_query('ticker', {'currency': currency})
 
 
-# Состояние торгов
+
 def getdepth(currency):
     return yo_query('depth', {'currency': currency})
 
 
-# История сделок
 def gettrades(currency, limit=150):
     return yo_query('trades', {'currency': currency, 'limit': str(limit)})
 
