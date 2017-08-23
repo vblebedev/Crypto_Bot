@@ -162,9 +162,9 @@ class trade_api(abstract_api):
             response = self.post_request(method, data)
             value = json.loads(response)
             if value['cancelled'] == True:
-                print('успешно отменен ордер #', od['id'], 'объёмом', value['quantity'], od['pair'])
+                print('Cancel order #', od['id'], od['pair'])
             else:
-                print('ошибка отмены ордера #', od['id'], od['pair'])
+                print('Error! Order #', od['id'], od['pair'])
 
     def buy_currency(self, pair, quantity, price):
         method = "/exchange/buylimit"
@@ -172,7 +172,7 @@ class trade_api(abstract_api):
         response = self.post_request(method, data)
         value = json.loads(response)
         if value['success'] == True:
-            print('успешно создан ордер на покупку', str(quantity), pair, 'по курсу', str(price), ' #:',
+            print('Buy: ', str(quantity), pair, 'price', str(price), ' #:',
                   value['orderId'])
         else:
             print(value)
@@ -183,7 +183,7 @@ class trade_api(abstract_api):
         response = self.post_request(method, data)
         value = json.loads(response)
         if value['success'] == True:
-            print('успешно создан ордер на продажу', str(quantity), pair, 'по курсу', str(price), ' #:',
+            print('Sell: ', str(quantity), pair, 'price', str(price), ' #:',
                   value['orderId'])
         else:
             print(value)
