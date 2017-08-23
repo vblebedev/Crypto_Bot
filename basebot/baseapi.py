@@ -70,8 +70,8 @@ class abstract_api():
     def get_best_ask(self, pair):
         pass
 
-    def get_btc_ex(self):
-        return '/BTC'
+    def get_btc_ex(self, cur):
+        return cur + '/BTC'
 
     def get_btc_balance(self, balance):
         if 'BTC' in balance:
