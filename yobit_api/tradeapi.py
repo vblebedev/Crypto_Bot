@@ -3,10 +3,14 @@ import yobit_api
 
 
 class trade_api(abstract_api):
+
+    def __init__(self, proxy_sett):
+        self.yobit = yobit_api.Yobit(proxy_sett)
+
     def get_openorders(self):
         d = []
         pr_lst = []
-        fnd = yobit_api.getfunds()
+        fnd = self.yobit.getfunds()
         if fnd['success'] == 1:
             fnd = fnd['return']['funds_incl_orders']
         for f in fnd:
@@ -16,7 +20,7 @@ class trade_api(abstract_api):
         for pr in pr_lst:
             if pr != 'btc':
                 try:
-                    gto = yobit_api.getactiveorders(pr + self.get_btc_ex())
+                    gto = self.yobit.getactiveorders(pr + self.get_btc_ex())
                     if gto['success'] == 1 and 'return' in gto:
                         for ao in gto['return']:
                             d.append(ao)
@@ -35,7 +39,7 @@ class trade_api(abstract_api):
 
     def get_balanses(self):
         d = {}
-        fnd = yobit_api.getfunds()
+        fnd = self.yobit.getfunds()
         if fnd['success'] == 1:
             fnd = fnd['return']['funds']
         for f in fnd:
@@ -45,11 +49,11 @@ class trade_api(abstract_api):
 
     def cancel_orders(self, order_ids):
         for ods in order_ids:
-            yobit_api.cancelorder(ods)
+            self.yobit.cancelorder(ods)
 
     def get_buy_price(self, pair):
         p = 0
-        trs = yobit_api.gettradehistory(pair, count=1)
+        trs = self.yobit.gettradehistory(pair, count=1)
         if trs['success'] == 1 and ('return' in trs):
             trs = trs['return']
             for t in trs:
@@ -59,7 +63,7 @@ class trade_api(abstract_api):
         return p
 
     def get_coin_details(self, pair):
-        return yobit_api.getticker(pair)
+        return self.yobit.getticker(pair)
 
     def is_Error(self, req):
         return False
@@ -72,28 +76,28 @@ class trade_api(abstract_api):
         return pair['sell']
 
     def sell_currency(self, pair, quantity, price):
-        return yobit_api.trade(pair, 'sell', price, quantity)
+        return self.yobit.trade(pair, 'sell', price, quantity)
 
     def get_coin_list(self):
         rs = []
-        d = yobit_api.getinfo()
-        pair_list = []
-        for pr in d['pairs']:
-            if '_btc' in pr:
-                pair_list.append(pr)
-#        YoBit have nearly  a thousand coins. Most of them are shitcoins. So it makes sense to do the white list of coins     
-#        pair_list = ['eth_btc', 'dash_btc', 'lsk_btc', 'waves_btc', 'edit_btc', 'nlc2_btc', 'ping_btc',
-#                     'cube_btc', 'av_btc', 'bub_btc', 'plbt_btc', 'dgb_btc', 'ltc_btc', 'doge_btc', 'nlg_btc',
-#                     'zec_btc', 'mcar_btc', 'etc_btc', 'zeni_btc', 'xby_btc', 'laz_btc', 'ent_btc',
-#                     'game_btc', 'kgb_btc', 'max_btc', 'hmc_btc', 'mco_btc', 'ecob_btc', 'sak_btc', 'html5_btc',
-#                     'clud_btc', 'rubit_btc', 'find_btc', 'pie_btc', 'icash_btc']
-#
-
+        # d = self.yobit.getinfo()
+        # pair_list = []
+        # for pr in d['pairs']:
+        #     if '_btc' in pr:
+        #         pair_list.append(pr)
+        pair_list = ['eth_btc', 'dash_btc', 'lsk_btc', 'waves_btc', 'edit_btc', 'nlc2_btc', 'ping_btc',
+                     'cube_btc', 'av_btc', 'bub_btc', 'plbt_btc', 'dgb_btc', 'ltc_btc', 'doge_btc', 'nlg_btc',
+                     'zec_btc', 'mcar_btc', 'etc_btc', 'zeni_btc', 'xby_btc', 'laz_btc', 'ent_btc',
+                     'game_btc', 'kgb_btc', 'max_btc', 'hmc_btc', 'mco_btc', 'ecob_btc', 'sak_btc', 'html5_btc',
+                     'clud_btc', 'rubit_btc', 'find_btc', 'pie_btc', 'icash_btc']
         for pr in pair_list:
-            cd = self.get_coin_details(pr)
-            cd = self.get_currency_info(cd)
-            cd['pair'] = pr
-            rs.append(cd)
+            try:
+                cd = self.get_coin_details(pr)
+                cd = self.get_currency_info(cd)
+                cd['pair'] = pr
+                rs.append(cd)
+            except:
+                pass
         return rs
 
     def get_volume(self, co):
@@ -121,4 +125,4 @@ class trade_api(abstract_api):
         return pair['sell']
 
     def buy_currency(self, pair, quantity, price):
-        return yobit_api.trade(pair, 'buy', price, quantity)
+        return self.yobit.trade(pair, 'buy', price, quantity)

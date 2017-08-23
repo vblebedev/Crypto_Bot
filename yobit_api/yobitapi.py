@@ -7,113 +7,112 @@ from yobit_api import client_key
 from yobit_api import client_secret
 from urllib.parse import urlencode
 
+class Yobit(object):
+    def __init__(self, proxy_sett):
+        self.proxy_settings = proxy_sett
 
-proxy = 'proxy.ru:3128'
+    def yo_query(self, method, values):
+        md_public = ['info', 'ticker', 'depth', 'trades']
 
-proxyDict = {
-    "http": proxy,
-    "https": proxy,
-    "ftp": proxy
-}
+        if method in md_public:
+            url = 'https://yobit.net/api/3/' + method
+            for k in values:
+                if (k == 'currency') and (values[k] != ''):
+                    url += '/' + values[k]
+            for k in values:
+                if (k != 'currency') and (values[k] != ''):
+                    url += '?' + k + '=' + values[k]
+            if self.proxy_settings['proxy_used']:
+                req = requests.get(url, proxies=self.proxy_settings['proxyDict'])
+            else:
+                req = requests.get(url)
+            return json.loads(req.text)
 
-
-def yo_query(method, values):
-    md_public = ['info', 'ticker', 'depth', 'trades']
-
-    if method in md_public:
-        url = 'https://yobit.net/api/3/' + method
-        for k in values:
-            if (k == 'currency') and (values[k] != ''):
-                url += '/' + values[k]
-        for k in values:
-            if (k != 'currency') and (values[k] != ''):
-                url += '?' + k + '=' + values[k]
-
-        req = requests.get(url, proxies=proxyDict)
-        return json.loads(req.text)
-
-    else:
-        url = 'https://yobit.net/tapi'
-        values['method'] = method
-        values['nonce'] = str(int(time.time()))
-        body = urlencode(values)
-        signature = hmac.new(client_secret, body.encode('utf-8'), hashlib.sha512).hexdigest()
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Key': client_key,
-            'Sign': signature
-        }
-
-        req = requests.post(url, data=values, headers=headers, proxies=proxyDict)
-        return json.loads(req.text)
+        else:
+            url = 'https://yobit.net/tapi'
+            values['method'] = method
+            values['nonce'] = str(int(time.time()))
+            body = urlencode(values)
+            signature = hmac.new(client_secret, body.encode('utf-8'), hashlib.sha512).hexdigest()
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Key': client_key,
+                'Sign': signature
+            }
+            if self.proxy_settings['proxy_used']:
+                req = requests.post(url, data=values, headers=headers, proxies=self.proxy_settings['proxyDict'])
+            else:
+                req = requests.post(url, data=values, headers=headers)
+            return json.loads(req.text)
 
 
-# PUBLIC API
-# ---------------------------------------------------------------------------------------------------------------------
-
-def getinfo():
-    return yo_query('info', {})
-
-
-
-def getticker(currency):
-    return yo_query('ticker', {'currency': currency})
+    # PUBLIC API
+    # ---------------------------------------------------------------------------------------------------------------------
+    # Информация обо всех парах
+    def getinfo(self):
+        return self.yo_query('info', {})
 
 
-
-def getdepth(currency):
-    return yo_query('depth', {'currency': currency})
-
-
-def gettrades(currency, limit=150):
-    return yo_query('trades', {'currency': currency, 'limit': str(limit)})
+    # Информация по паре
+    def getticker(self, currency):
+        return self.yo_query('ticker', {'currency': currency})
 
 
-# ---------------------------------------------------------------------------------------------------------------------
+    # Состояние торгов
+    def getdepth(self, currency):
+        return self.yo_query('depth', {'currency': currency})
 
 
-# TRADE API
-# ---------------------------------------------------------------------------------------------------------------------
-
-# getInfo
-def getfunds():
-    return yo_query('getInfo', {})
+    # История сделок
+    def gettrades(self, currency, limit=150):
+        return self.yo_query('trades', {'currency': currency, 'limit': str(limit)})
 
 
-# Trade
-def trade(pair, ttype, rate, amount):
-    return yo_query('Trade', {'pair': pair, 'type': ttype, 'rate': rate, 'amount': amount})
+    # ---------------------------------------------------------------------------------------------------------------------
 
 
-# ActiveOrders
-def getactiveorders(pair):
-    return yo_query('ActiveOrders', {'pair': pair})
+    # TRADE API
+    # ---------------------------------------------------------------------------------------------------------------------
+
+    # getInfo
+    def getfunds(self):
+        return self.yo_query('getInfo', {})
 
 
-# OrderInfo
-def getorderinfo(order_id):
-    return yo_query('OrderInfo', {'order_id': order_id})
+    # Trade
+    def trade(self, pair, ttype, rate, amount):
+        return self.yo_query('Trade', {'pair': pair, 'type': ttype, 'rate': rate, 'amount': amount})
 
 
-# CancelOrder
-def cancelorder(order_id):
-    return yo_query('CancelOrder', {'order_id': order_id})
+    # ActiveOrders
+    def getactiveorders(self, pair):
+        return self.yo_query('ActiveOrders', {'pair': pair})
 
 
-# TradeHistory
-def gettradehistory(pair, from_n=0, count=1000, from_id=0, end_id='', order='DESC', since=0, end=''):
-    return yo_query('TradeHistory',
-                    {'from': from_n, 'count': count, 'from_id': from_id, 'end_id': end_id, 'order': order,
-                     'since': since, 'end': end, 'pair': pair})
+    # OrderInfo
+    def getorderinfo(self, order_id):
+        return self.yo_query('OrderInfo', {'order_id': order_id})
 
 
-# GetDepositAddress
-def getdepositaddress(coinname, is_need_new=0):
-    return yo_query('GetDepositAddress', {'coinName': coinname, 'need_new': is_need_new})
+    # CancelOrder
+    def cancelorder(self, order_id):
+        return self.yo_query('CancelOrder', {'order_id': order_id})
 
 
-# WithdrawCoinsToAddress
-def withdrawcoinstoaddress(coinname, amount, address):
-    return yo_query('WithdrawCoinsToAddress', {'coinName': coinname, 'amount': amount, 'address': address})
+    # TradeHistory
+    def gettradehistory(self, pair, from_n=0, count=1000, from_id=0, end_id='', order='DESC', since=0, end=''):
+        return self.yo_query('TradeHistory',
+                        {'from': from_n, 'count': count, 'from_id': from_id, 'end_id': end_id, 'order': order,
+                         'since': since, 'end': end, 'pair': pair})
 
-# ---------------------------------------------------------------------------------------------------------------------
+
+    # GetDepositAddress
+    def getdepositaddress(self, coinname, is_need_new=0):
+        return self.yo_query('GetDepositAddress', {'coinName': coinname, 'need_new': is_need_new})
+
+
+    # WithdrawCoinsToAddress
+    def withdrawcoinstoaddress(self, coinname, amount, address):
+        return self.yo_query('WithdrawCoinsToAddress', {'coinName': coinname, 'amount': amount, 'address': address})
+
+    # ---------------------------------------------------------------------------------------------------------------------
