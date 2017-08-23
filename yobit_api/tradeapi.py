@@ -85,6 +85,7 @@ class trade_api(abstract_api):
         # for pr in d['pairs']:
         #     if '_btc' in pr:
         #         pair_list.append(pr)
+        #        YoBit have nearly  a thousand coins. Most of them are shitcoins. So it makes sense to do the white list of coins 
         pair_list = ['eth_btc', 'dash_btc', 'lsk_btc', 'waves_btc', 'edit_btc', 'nlc2_btc', 'ping_btc',
                      'cube_btc', 'av_btc', 'bub_btc', 'plbt_btc', 'dgb_btc', 'ltc_btc', 'doge_btc', 'nlg_btc',
                      'zec_btc', 'mcar_btc', 'etc_btc', 'zeni_btc', 'xby_btc', 'laz_btc', 'ent_btc',
