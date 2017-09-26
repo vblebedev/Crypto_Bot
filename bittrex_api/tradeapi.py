@@ -98,7 +98,7 @@ class trade_api(abstract_api):
         return not req['success']
 
     def get_currency_info(self, req):
-        return req['result']
+        return req['result'][0]
 
     def get_minask(self, pair):
         return pair['Ask']
