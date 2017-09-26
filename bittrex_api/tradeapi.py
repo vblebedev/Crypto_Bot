@@ -71,7 +71,7 @@ class trade_api(abstract_api):
         return d
 
     def get_volume(self, vol):
-        return vol['Volume']
+        return vol['BaseVolume']
 
     def is_btc(self, pair):
         return ('BTC-' in pair)
