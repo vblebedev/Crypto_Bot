@@ -68,6 +68,8 @@ rg_list.sort(key=lambda i: i['rang'], reverse=True)
 
 if max_num_orders > len(rg_list):
     max_num_orders = len(rg_list)
+    
+if max_num_orders > 0:
     order_size = (btc_balance * 0.99) / max_num_orders
 
     while (order_size * max_num_orders) > (btc_balance * 0.99):
